@@ -230,3 +230,37 @@ CREATE TABLE Sprachnachweis(
     FOREIGN KEY (Zertifikat) REFERENCES Zertifikat(Name)
 );
 
+-- Trigger: Nachdem ein Bewerbungszeitraum hinzugefügt wurde, kopieren wir 
+-- alle aktive Vertraege in Tabelle BZ_Vertrag mit diesem Bewerbungszeitraum
+-- Grund: Änderungen bei der Tabelle Vertrag können zu Datenverluste von früheren Jahren führen.
+DELIMITER //
+CREATE TRIGGER Bewerbungszeitraum_AfterInsert
+AFTER INSERT ON Bewerbungszeitraum FOR EACH ROW
+BEGIN
+    INSERT INTO BZ_Vertrag (Bewerbungszeitraum, Partneruni, Einrichtung, Plaetze, Bachelor, Master, PhD)
+    SELECT NEW.Name, Partneruni, Einrichtung, Plaetze, Bachelor, Master, PhD 
+    FROM Vertrag;
+END;
+// DELIMITER ;
+
+-- View: Anzahl der beworbenen Universitäten nach Studierende und Jahr
+CREATE VIEW StudierendeJahrAnzahlUni AS
+SELECT
+    S.Matrikelnummer, N.Vorname, N.Nachname,
+    B.Bewerbungszeitraum AS AkademischesJahr,
+    COUNT(BV.Bewerbungsnummer) AS AnzahlDerBeworbenenUniversitaeten
+FROM
+    Studierende S
+JOIN
+    Bewerbung B ON S.Email = B.Studierende
+JOIN
+    BewerbungVertrag BV ON BV.Bewerbungsnummer = B.Nummer
+JOIN
+    Benutzer N ON N.Email = S.Email
+GROUP BY
+	S.Email, AkademischesJahr;
+
+ 
+-- Index:
+CREATE INDEX PartneruniName ON Partneruniversitaet(Name);
+CREATE INDEX VornameNachname ON Benutzer(Vorname, Nachname);

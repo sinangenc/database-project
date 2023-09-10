@@ -83,3 +83,18 @@ JOIN Partneruniversitaet P ON P.ErasmusCode = BV.Partneruni
 WHERE B.Status!="In Vorbereitung"
 GROUP BY B.Bewerbungszeitraum, P.Land
 ORDER BY B.Bewerbungszeitraum DESC, AnzahBewerbungen DESC;
+
+
+/*
+SQL Query 6:
+Studierende, die sich für akademisches Jahr 2022/2023 beworben und eine Zulassung 
+erhalten hatten und danach sich für 2023/2024 wieder beworben haben
+*/
+SELECT 
+	B.Nummer AS Bewerbungsnummer,
+	S.Matrikelnummer, N.Vorname, N.Nachname
+FROM Bewerbung B
+JOIN Studierende S ON S.Email = B.Studierende
+JOIN Benutzer N ON N.Email = S.Email
+WHERE B.Status="Eingegangen" AND B.Bewerbungszeitraum = "2023/2024" AND 
+	  EXISTS (SELECT Nummer FROM Bewerbung B2 WHERE B2.Studierende = B.Studierende AND B2.Bewerbungszeitraum = "2022/2023" AND B2.Status="Zugelassen");

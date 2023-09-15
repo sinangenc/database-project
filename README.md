@@ -28,5 +28,5 @@ The project follows a structured database design approach, going through various
 
 
 ## ER(Entity-Relationship) Diagram
-![ER Diagram](er_diagram.jpg)
+![ER Diagram](ER_Diagram.jpg)
 
